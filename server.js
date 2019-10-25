@@ -22,6 +22,17 @@ mongoose.connect(MONGODB_URI, { useNewUrlParser: true, useUnifiedTopology: true 
     console.log(err)
 });
 
+app.get("/", function(req, res) {
+    db.Article.find({}, function(err, data) {
+        if(data.length === 0){
+            res.redirect("/scrape");
+        }
+        else {
+            res.redirect("/articles");
+        }
+    });
+});
+
 app.get("/scrape", function (req, res) {
     axios.get("https://www.nytimes.com/section/world").then(function (response) {
         var $ = cheerio.load(response.data);
@@ -46,9 +57,9 @@ app.get("/articles", function (req, res) {
     db.Article.find({}).then(function (dbArticle) {
         res.json(dbArticle);
     })
-        .catch(function (err) {
-            res.json(err);
-        });
+    .catch(function (err) {
+        res.json(err);
+    });
 });
 
 app.get("/articles/:id", function(req, res){
@@ -72,6 +83,17 @@ app.post("/articles/:id", function(req, res){
     .catch(function(err) {
         res.json(err);
     });
+});
+
+app.post("/articles/:id", function(req, res) {
+    db.Note.findByIdAndRemove(req.params.id, function(err, dbNote) {
+        if (err) {
+            return res.status(500).send(err);
+        }
+        else {
+            return res.status(200).send("Successfully deleted " + dbNote._id);
+        }
+    })
 });
 
 app.listen(PORT, function () {
