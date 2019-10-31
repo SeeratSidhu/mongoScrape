@@ -78,9 +78,10 @@ app.get("/articles/:id", function(req, res){
 
 // Route to save/update note
 app.post("/articles/:id", function(req, res){
-    
+    console.log(req.body);
     db.Note.create(req.body).then(function(dbNote) {
-        return db.Article.findOneAndUpdate({_id:req.params.id}, {note: dbNote._id }, {new: true});
+        console.log(dbNote);
+        return db.Article.findOneAndUpdate({_id:req.params.id}, {$push: {note: dbNote._id }}, {new: true});
     })
     .then(function(dbArticle){
         res.json(dbArticle);
@@ -89,17 +90,17 @@ app.post("/articles/:id", function(req, res){
         res.json(err);
     });
 });
-//Route to delete comment
-// app.post("/articles/:id", function(req, res) {
-//     db.Note.findByIdAndRemove(req.params.id, function(err, dbNote) {
-//         if (err) {
-//             return res.status(500).send(err);
-//         }
-//         else {
-//             return res.status(200).send("Successfully deleted " + dbNote._id);
-//         }
-//     })
-// });
+// Route to delete comment
+app.delete("/remove/:id", function(req, res) {
+    db.Note.findByIdAndRemove(req.params.id, function(err, dbNote) {
+        if (err) {
+            return res.status(500).send(err);
+        }
+        else {
+            return res.status(200).send("Successfully deleted " + dbNote._id);
+        }
+    })
+});
 
 app.listen(PORT, function () {
     console.log("App running on port " + PORT + "!");
